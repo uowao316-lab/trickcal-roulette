@@ -18,6 +18,17 @@ h1 {
   margin: 20px 0;
 }
 
+#mode {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+select {
+  padding: 8px 14px;
+  font-size: 16px;
+  border-radius: 8px;
+}
+
 #frame {
   width: 100%;
   overflow: hidden;
@@ -85,7 +96,14 @@ button {
 
 <body>
 
-<h1>🎰 今日の夜のお供ルーレット</h1>
+<h1>トリッカル 今日の夜のお供ルーレット</h1>
+
+<div id="mode">
+  <select id="rouletteMode">
+    <option value="normal">通常ルーレット</option>
+    <option value="hell">地獄ルーレット</option>
+  </select>
+</div>
 
 <div id="frame">
   <div id="reel"></div>
@@ -96,9 +114,9 @@ button {
 
 <script>
 // =======================
-// キャラデータ（確定順）
+// 通常ルーレット
 // =======================
-const chars = [
+const normalChars = [
   {name:"コミー", img:"images/i_c_1.png"},
   {name:"アレット", img:"images/i_c_2.png"},
   {name:"アメリア", img:"images/i_c_3.png"},
@@ -160,25 +178,52 @@ const chars = [
 ];
 
 // =======================
-// 初期描画（3周）
+// 地獄ルーレット
 // =======================
+const hellChars = [
+  ...Array(80).fill({name:"ぱせふぃん", img:"images/pasefin.png"}),
+  ...Array(10).fill({name:"ビッグウッド", img:"images/i_c_7.png"}),
+  ...Array(10).fill({name:"マエストロMK2", img:"images/i_c_26.png"})
+];
+
 const reel = document.getElementById("reel");
 const result = document.getElementById("result");
 const btn = document.getElementById("spinBtn");
-
-const loop = [...chars, ...chars, ...chars];
-loop.forEach(c => {
-  const card = document.createElement("div");
-  card.className = "card";
-  card.innerHTML = `<img src="${c.img}" loading="lazy"><p>${c.name}</p>`;
-  reel.appendChild(card);
-});
+const modeSelect = document.getElementById("rouletteMode");
 
 let currentX = 0;
 let spinning = false;
+let currentChars = normalChars;
 
 // =======================
-// ルーレット処理（完全一致）
+// 描画関数
+// =======================
+function render(chars) {
+  reel.innerHTML = "";
+  currentX = 0;
+
+  const loop = [...chars, ...chars, ...chars];
+  loop.forEach(c => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `<img src="${c.img}"><p>${c.name}</p>`;
+    reel.appendChild(card);
+  });
+
+  reel.style.transform = "translateX(0)";
+}
+
+// 初期描画
+render(currentChars);
+
+// モード切替
+modeSelect.onchange = () => {
+  currentChars = modeSelect.value === "hell" ? hellChars : normalChars;
+  render(currentChars);
+};
+
+// =======================
+// スピン
 // =======================
 btn.onclick = () => {
   if (spinning) return;
@@ -186,12 +231,11 @@ btn.onclick = () => {
   result.textContent = "";
 
   const cards = document.querySelectorAll(".card");
+  const base = currentChars.length;
 
-  // 当選キャラを先に決定
-  const winIndex = Math.floor(Math.random() * chars.length);
-  const targetCard = cards[chars.length + winIndex];
+  const winIndex = Math.floor(Math.random() * currentChars.length);
+  const targetCard = cards[base + winIndex];
 
-  // 実測で中央に合わせる
   const frameRect = document.getElementById("frame").getBoundingClientRect();
   const barX = frameRect.left + frameRect.width / 2;
 
@@ -205,7 +249,7 @@ btn.onclick = () => {
   currentX = move;
 
   setTimeout(() => {
-    result.textContent = `🎉 選ばれたのは「${chars[winIndex].name}」！`;
+    result.textContent = `選ばれたのは「${currentChars[winIndex].name}」`;
     spinning = false;
   }, 3100);
 };
