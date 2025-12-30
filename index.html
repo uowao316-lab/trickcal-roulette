@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>トリッカル 今日の夜のお供ルーレット</title>
+
+<style>
+body {
+  margin: 0;
+  background: #0e0e14;
+  color: #fff;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+h1 {
+  text-align: center;
+  margin: 20px 0;
+}
+
+#frame {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+/* 黄色バー */
+#frame::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 4px;
+  background: #ffd966;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+#reel {
+  display: flex;
+  gap: 12px;
+  padding: 20px;
+  will-change: transform;
+}
+
+.card {
+  min-width: 140px;
+  background: #26263a;
+  border-radius: 14px;
+  padding: 10px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.card img {
+  width: 100%;
+  border-radius: 10px;
+}
+
+.card p {
+  margin: 6px 0 0;
+  font-size: 14px;
+}
+
+button {
+  display: block;
+  margin: 20px auto;
+  padding: 14px 30px;
+  font-size: 18px;
+  border: none;
+  border-radius: 999px;
+  background: #ffd966;
+  color: #000;
+  font-weight: bold;
+}
+
+#result {
+  text-align: center;
+  font-size: 20px;
+  margin-bottom: 30px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🎰 今日の夜のお供ルーレット</h1>
+
+<div id="frame">
+  <div id="reel"></div>
+</div>
+
+<button id="spinBtn">回す</button>
+<div id="result"></div>
+
+<script>
+// =======================
+// キャラデータ（確定順）
+// =======================
+const chars = [
+  {name:"コミー", img:"images/i_c_1.png"},
+  {name:"アレット", img:"images/i_c_2.png"},
+  {name:"アメリア", img:"images/i_c_3.png"},
+  {name:"アヤ", img:"images/i_c_4.png"},
+  {name:"ベリータ", img:"images/i_c_5.png"},
+  {name:"ベニー", img:"images/i_c_6.png"},
+  {name:"ビッグウッド", img:"images/i_c_7.png"},
+  {name:"カンナ", img:"images/i_c_8.png"},
+  {name:"カレン", img:"images/i_c_9.png"},
+  {name:"クロエ", img:"images/i_c_10.png"},
+  {name:"チョッピー", img:"images/i_c_11.png"},
+  {name:"キュウイ", img:"images/i_c_12.png"},
+  {name:"ディアナ", img:"images/i_c_13.png"},
+  {name:"エルフィン", img:"images/i_c_14.png"},
+  {name:"エスピー", img:"images/i_c_15.png"},
+  {name:"フェスタ", img:"images/i_c_16.png"},
+  {name:"フリックル", img:"images/i_c_17.png"},
+  {name:"ガヴィア", img:"images/i_c_18.png"},
+  {name:"ヘイリー", img:"images/i_c_19.png"},
+  {name:"イフリート", img:"images/i_c_20.png"},
+  {name:"ジェイド", img:"images/i_c_21.png"},
+  {name:"ジュビー", img:"images/i_c_22.png"},
+  {name:"ギデオン", img:"images/i_c_23.png"},
+  {name:"レイジー", img:"images/i_c_24.png"},
+  {name:"レヴィ", img:"images/i_c_25.png"},
+  {name:"マエストロMK2", img:"images/i_c_26.png"},
+  {name:"マーゴ", img:"images/i_c_27.png"},
+  {name:"メゾン", img:"images/i_c_28.png"},
+  {name:"マリー", img:"images/i_c_29.png"},
+  {name:"マヨ", img:"images/i_c_30.png"},
+  {name:"メロナ", img:"images/i_c_31.png"},
+  {name:"モモ", img:"images/i_c_32.png"},
+  {name:"ミンス", img:"images/i_c_33.png"},
+  {name:"パトラ", img:"images/i_c_34.png"},
+  {name:"ピコラ", img:"images/i_c_35.png"},
+  {name:"ポーシャー", img:"images/i_c_36.png"},
+  {name:"リム", img:"images/i_c_37.png"},
+  {name:"ルード", img:"images/i_c_38.png"},
+  {name:"ルポ", img:"images/i_c_39.png"},
+  {name:"サリー", img:"images/i_c_40.png"},
+  {name:"シェイディ", img:"images/i_c_41.png"},
+  {name:"シルフィール", img:"images/i_c_42.png"},
+  {name:"シスト", img:"images/i_c_43.png"},
+  {name:"スピッキー", img:"images/i_c_44.png"},
+  {name:"シーラ", img:"images/i_c_45.png"},
+  {name:"タイダー", img:"images/i_c_46.png"},
+  {name:"ウイ", img:"images/i_c_47.png"},
+  {name:"ベルベット", img:"images/i_c_48.png"},
+  {name:"ベル", img:"images/i_c_49.png"},
+  {name:"シオン", img:"images/i_c_50.png"},
+  {name:"ユミミ", img:"images/i_c_51.png"},
+  {name:"ヴィヴィ", img:"images/i_c_52.png"},
+  {name:"ヨミ", img:"images/i_c_53.png"},
+  {name:"バター", img:"images/i_c_54.png"},
+  {name:"アリス", img:"images/i_c_55.png"},
+  {name:"ヒルデ", img:"images/i_c_56.png"},
+  {name:"エレナ", img:"images/i_c_57.png"},
+  {name:"リッツ", img:"images/i_c_58.png"}
+];
+
+// =======================
+// 初期描画（3周）
+// =======================
+const reel = document.getElementById("reel");
+const result = document.getElementById("result");
+const btn = document.getElementById("spinBtn");
+
+const loop = [...chars, ...chars, ...chars];
+loop.forEach(c => {
+  const card = document.createElement("div");
+  card.className = "card";
+  card.innerHTML = `<img src="${c.img}" loading="lazy"><p>${c.name}</p>`;
+  reel.appendChild(card);
+});
+
+let currentX = 0;
+let spinning = false;
+
+// =======================
+// ルーレット処理（完全一致）
+// =======================
+btn.onclick = () => {
+  if (spinning) return;
+  spinning = true;
+  result.textContent = "";
+
+  const cards = document.querySelectorAll(".card");
+
+  // 当選キャラを先に決定
+  const winIndex = Math.floor(Math.random() * chars.length);
+  const targetCard = cards[chars.length + winIndex];
+
+  // 実測で中央に合わせる
+  const frameRect = document.getElementById("frame").getBoundingClientRect();
+  const barX = frameRect.left + frameRect.width / 2;
+
+  const cardRect = targetCard.getBoundingClientRect();
+  const cardCenter = cardRect.left + cardRect.width / 2;
+
+  const move = currentX + (cardCenter - barX);
+
+  reel.style.transition = "transform 3s cubic-bezier(.15,.7,.15,1)";
+  reel.style.transform = `translateX(-${move}px)`;
+  currentX = move;
+
+  setTimeout(() => {
+    result.textContent = `🎉 選ばれたのは「${chars[winIndex].name}」！`;
+    spinning = false;
+  }, 3100);
+};
+</script>
+
+</body>
+</html>
